@@ -3,6 +3,14 @@
 version = 4
 
 [[package]]
+name = "aht10-embedded"
+version = "0.0.2"
+source = "git+https://github.com/bzhoek/rs-aht10?branch=embedded-hal-1-0#ca310837f8f839412051877fd07f3198cfddc28e"
+dependencies = [
+ "embedded-hal 1.0.0",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -602,8 +610,10 @@ dependencies = [
 name = "esp32c3-aht10"
 version = "0.1.0"
 dependencies = [
+ "aht10-embedded",
  "critical-section",
  "defmt 1.0.1",
+ "embedded-hal 1.0.0",
  "esp-backtrace",
  "esp-bootloader-esp-idf",
  "esp-hal",

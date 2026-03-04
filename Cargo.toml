@@ -23,6 +23,8 @@ esp-backtrace = { version = "0.18.1", features = [
 ] }
 esp-println = { version = "0.16.1", features = ["defmt-espflash", "esp32c3"] }
 
+embedded-hal = "1.0.0"
+aht10-embedded = { git = "https://github.com/bzhoek/rs-aht10", branch = "embedded-hal-1-0" }
 
 [profile.dev]
 # Rust debug is too slow.
