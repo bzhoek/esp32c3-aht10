@@ -39,7 +39,7 @@ fn main() -> ! {
       }
       Err(_) => error!("Failed to read data"),
     }
-    delay.delay_ms(500);
+    delay.delay_ms(2000);
   }
 
 }
