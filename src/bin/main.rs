@@ -10,12 +10,10 @@
 use aht10_embedded::AHT10;
 use defmt::{error, info};
 use embedded_hal::delay::DelayNs;
-use esp_hal::clock::CpuClock;
+use esp32c3_aht10::{create_i2c, take_peripherals};
 use esp_hal::delay::Delay;
-use esp_hal::i2c::master::{Config, I2c};
 use esp_hal::main;
 use {esp_backtrace as _, esp_println as _};
-
 
 // This creates a default app-descriptor required by the esp-idf bootloader.
 // For more information see: <https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/app_image_format.html#application-description>
@@ -27,13 +25,8 @@ esp_bootloader_esp_idf::esp_app_desc!();
 )]
 #[main]
 fn main() -> ! {
-  let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
-  let peripherals = esp_hal::init(config);
-
-  let i2c =
-    I2c::new(peripherals.I2C0, Config::default()).unwrap()
-      .with_sda(peripherals.GPIO3)
-      .with_scl(peripherals.GPIO4);
+  let peripherals = take_peripherals();
+  let i2c = create_i2c(peripherals.I2C0, peripherals.GPIO3, peripherals.GPIO4);
 
   let mut aht = AHT10::new(i2c);
   let mut delay = Delay::new();
