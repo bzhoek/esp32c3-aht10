@@ -7,29 +7,46 @@
 )]
 #![deny(clippy::large_stack_frames)]
 
-use defmt::info;
+use aht10_embedded::AHT10;
+use defmt::{error, info};
+use embedded_hal::delay::DelayNs;
 use esp_hal::clock::CpuClock;
+use esp_hal::delay::Delay;
+use esp_hal::i2c::master::{Config, I2c};
 use esp_hal::main;
-use esp_hal::time::{Duration, Instant};
 use {esp_backtrace as _, esp_println as _};
+
 
 // This creates a default app-descriptor required by the esp-idf bootloader.
 // For more information see: <https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/app_image_format.html#application-description>
 esp_bootloader_esp_idf::esp_app_desc!();
 
-#[allow(clippy::large_stack_frames, reason = "it's not unusual to allocate larger buffers etc. in main")]
+#[allow(
+  clippy::large_stack_frames,
+  reason = "it's not unusual to allocate larger buffers etc. in main"
+)]
 #[main]
 fn main() -> ! {
-  // generator version: 1.2.0
-
   let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
-  let _peripherals = esp_hal::init(config);
+  let peripherals = esp_hal::init(config);
+
+  let i2c =
+    I2c::new(peripherals.I2C0, Config::default()).unwrap()
+      .with_sda(peripherals.GPIO3)
+      .with_scl(peripherals.GPIO4);
+
+  let mut aht = AHT10::new(i2c);
+  let mut delay = Delay::new();
 
   loop {
-    info!("Hello world!");
-    let delay_start = Instant::now();
-    while delay_start.elapsed() < Duration::from_millis(500) {}
+    match aht.read_data(&mut delay) {
+      Ok(data) => {
+        let temp = ((data.temperature_celsius() * 10.0) as i16) as f32 / 10.0;
+        info!("Temperature: {}°C, Humidity: {}%", temp, data.humidity() as u8);
+      }
+      Err(_) => error!("Failed to read data"),
+    }
+    delay.delay_ms(500);
   }
 
-  // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/esp-hal-v1.0.0/examples
 }
